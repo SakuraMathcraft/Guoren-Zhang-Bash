@@ -1,0 +1,12 @@
+{
+  "name": "2026 跨年 & Guoren Zhang 生日bash",
+  "description": "沉浸式 2026 跨年倒计时体验，包含 21 根蜡烛的互动蛋糕、黑胶唱片机以及吹气感应庆祝动画。",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "openGraph": {
+    "title": "Hello 2026! 庆祝时刻",
+    "description": "快来为 Guoren Zhang 吹灭 21 岁生日蜡烛，共同迎接 2026！",
+    "type": "website"
+  }
+}
