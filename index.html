@@ -9,16 +9,30 @@
     <style>
       body {
         margin: 0;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: auto;
+        background: #020205;
         background: radial-gradient(circle at center, #0a0a0f 0%, #020205 100%);
         color: white;
         font-family: 'Montserrat', sans-serif;
+        min-height: 100vh;
       }
       .font-artistic {
         font-family: 'Great Vibes', cursive;
       }
       .font-elegant {
         font-family: 'Playfair Display', serif;
+      }
+      /* Custom scrollbar for better aesthetics */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
       }
       ::selection {
         background: rgba(255, 255, 255, 0.1);

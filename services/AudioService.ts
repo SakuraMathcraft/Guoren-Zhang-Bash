@@ -28,7 +28,6 @@ class AudioService {
       { f: 466.16, d: 0.5 }, { f: 440.00, d: 0.5 }, { f: 349.23, d: 1.0 },
       { f: 392.00, d: 1.5 }
     ],
-    // 其他轨道保持一致...
     [{ f: 523.25, d: 0.2 }, { f: 659.25, d: 0.2 }, { f: 783.99, d: 0.2 }, { f: 1046.5, d: 0.8 }],
     [{ f: 440.00, d: 0.8 }, { f: 493.88, d: 0.8 }, { f: 523.25, d: 1.6 }],
     [{ f: 659.25, d: 0.4 }, { f: 587.33, d: 0.4 }, { f: 523.25, d: 0.4 }],
@@ -51,7 +50,7 @@ class AudioService {
     const gain = this.audioCtx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(isFinal ? 880 : 440, this.audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.3, this.audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.6, this.audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.1);
     osc.connect(gain);
     gain.connect(this.audioCtx.destination);
@@ -105,8 +104,7 @@ class AudioService {
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(n.f, time);
       gain.gain.setValueAtTime(0, time);
-      // Increased volume from 0.12 to 0.45
-      gain.gain.linearRampToValueAtTime(0.45, time + 0.05);
+      gain.gain.linearRampToValueAtTime(0.85, time + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.001, time + n.d);
       osc.connect(gain);
       gain.connect(this.audioCtx!.destination);

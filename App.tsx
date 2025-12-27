@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AppState } from './types';
 import CountdownTimer from './components/CountdownTimer';
@@ -7,7 +6,7 @@ import VinylRecord from './components/VinylRecord';
 import Lottie from 'lottie-react';
 import { audioService } from './services/AudioService';
 import { giftLottieData } from './data/giftLottie';
-import { Mic, FlaskConical, Sparkles, Timer } from 'lucide-react';
+import { Mic, FlaskConical, Sparkles, Timer, Heart, Users } from 'lucide-react';
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.COUNTDOWN);
@@ -18,6 +17,7 @@ const App: React.FC = () => {
   const [micActive, setMicActive] = useState(false);
   const [isBlown, setIsBlown] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
+  const [showFriends, setShowFriends] = useState(false);
 
   // Mouse interaction state for text
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -37,9 +37,7 @@ const App: React.FC = () => {
     if (appState === AppState.FINAL_COUNTDOWN) {
       interval = window.setInterval(() => {
         setFinalSeconds((prev) => {
-          // Play tick sound every second
           audioService.playCountdownTick(prev === 1);
-          
           if (prev <= 1) {
             clearInterval(interval);
             setAppState(AppState.CAKE_REVEAL);
@@ -54,7 +52,7 @@ const App: React.FC = () => {
 
   const startTestMode = () => setAppState(AppState.CAKE_REVEAL);
   const startFinalPreview = () => {
-    audioService.init(); // Initialize audio context on click
+    audioService.init();
     setFinalSeconds(10);
     setAppState(AppState.FINAL_COUNTDOWN);
   };
@@ -87,6 +85,8 @@ const App: React.FC = () => {
     audioService.playTrack(index);
   };
 
+  const companions = ["Zhengyu Xu", "Zhiheng Du", "Yang Zheng"];
+
   const particles = useMemo(() => {
     return Array.from({ length: 70 }).map((_, i) => ({
       id: i,
@@ -109,18 +109,18 @@ const App: React.FC = () => {
     <div 
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className={`min-h-screen transition-all duration-[3000ms] ${isBlown ? 'bg-[#00000a]' : 'bg-[#030303]'} flex flex-col items-center relative px-6 overflow-hidden`}
+      className={`min-h-screen transition-all duration-[3000ms] ${isBlown ? 'bg-[#00000a]' : 'bg-[#030303]'} flex flex-col items-center relative px-6 overflow-x-hidden overflow-y-auto pb-48 md:pb-64`}
     >
       
       {/* Atmosphere Background */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="fixed inset-0 pointer-events-none">
         <div className={`absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-blue-900/10 blur-[180px] rounded-full animate-pulse transition-opacity duration-3000 ${appState !== AppState.COUNTDOWN ? 'opacity-100' : 'opacity-40'}`} />
         <div className={`absolute bottom-[-10%] right-[-10%] w-[70%] h-[70%] bg-purple-900/10 blur-[180px] rounded-full animate-pulse transition-opacity duration-3000 ${appState !== AppState.COUNTDOWN ? 'opacity-100' : 'opacity-40'}`} style={{ animationDelay: '3s' }} />
         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
       </div>
 
       {isBlown && (
-        <div className="absolute inset-0 pointer-events-none z-40 overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
           {particles.map((p) => (
             <div 
               key={p.id} 
@@ -140,7 +140,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center pb-24 md:pb-32">
+      <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center pt-8">
         
         {appState === AppState.COUNTDOWN && (
           <div className="w-full flex flex-col items-center animate-ios-entry text-center">
@@ -190,12 +190,10 @@ const App: React.FC = () => {
 
         {(appState === AppState.CAKE_REVEAL || appState === AppState.BLOWN) && (
           <div className="w-full flex flex-col items-center relative h-full justify-center min-h-[450px]">
-            {/* Cake Container - Desktop Scaling Applied here */}
             <div className={`transition-all duration-[2500ms] ease-ios ${isBlown ? 'translate-y-20 scale-75 opacity-5 blur-[30px] pointer-events-none' : 'translate-y-[-18%] scale-75 md:scale-[0.67]'}`}>
               <Cake isBlown={isBlown} />
             </div>
 
-            {/* Start Sensor / Blow Instructions */}
             {appState === AppState.CAKE_REVEAL && !isBlown && (
               <div className="absolute bottom-[5vh] md:bottom-[-20px] left-0 right-0 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-8 duration-1000 z-20 pointer-events-none">
                 {!micActive ? (
@@ -220,51 +218,93 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Modern Interactive Celebration Text - Scaled for Desktop (50%) and shifted up for Mobile */}
-            <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50 overflow-visible text-center pb-[10vh] md:pb-0 md:scale-50`}>
-              {showLetters && (
-                <div 
-                  className="animate-hero-rise group pointer-events-auto cursor-default px-4"
-                  style={tiltStyle}
-                >
-                  <h1 className="interactive-text text-7xl sm:text-8xl md:text-[15rem] font-artistic text-white leading-none tracking-tight">
-                    Hello 2026!
-                  </h1>
-                </div>
-              )}
-              {showBirthday && (
-                <div 
-                  className="animate-subhero-float mt-8 md:mt-16 flex flex-col items-center group pointer-events-auto cursor-default px-4"
-                  style={tiltStyle}
-                >
-                  <h2 className="interactive-text text-3xl sm:text-5xl md:text-8xl font-elegant italic text-white/95 leading-tight max-w-6xl drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                    Happy Birthday, Guoren Zhang!
-                  </h2>
-                  <div className="mt-8 md:mt-24 flex items-center gap-8 md:gap-16 opacity-40">
-                    <div className="h-[1px] w-16 md:w-48 bg-gradient-to-r from-transparent via-white to-transparent" />
-                    <Sparkles className="w-12 h-12 md:w-20 md:h-20 text-yellow-100 animate-pulse" />
-                    <div className="h-[1px] w-16 md:w-48 bg-gradient-to-l from-transparent via-white to-transparent" />
+            <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50 overflow-visible text-center pb-[5vh] md:pb-0 md:scale-50`}>
+              <div className={`flex flex-col items-center transition-all duration-1000 ease-ios ${showFriends ? 'gap-2 translate-y-[-6vh] md:translate-y-[-10vh]' : 'gap-2 md:gap-20'}`}>
+                {showLetters && (
+                  <div className="animate-hero-rise group pointer-events-auto cursor-default px-4" style={tiltStyle}>
+                    <h1 className="interactive-text text-5xl sm:text-8xl md:text-[15rem] font-artistic text-white leading-none tracking-tight">
+                      Hello 2026!
+                    </h1>
                   </div>
-                </div>
-              )}
+                )}
+                
+                {showBirthday && (
+                  <div className={`flex flex-col items-center group pointer-events-auto cursor-default px-4 transition-all duration-700 ${showFriends ? 'scale-[0.85] md:scale-100' : ''}`} style={tiltStyle}>
+                    <h2 className="interactive-text text-2xl sm:text-5xl md:text-8xl font-elegant italic text-white/95 leading-tight max-w-6xl drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                      Happy Birthday, Guoren Zhang!
+                    </h2>
+
+                    {/* Repositioned Sparkles below birthday text */}
+                    {!showFriends && (
+                      <div className="mt-4 mb-4 md:mt-8 md:mb-8 flex items-center gap-8 md:gap-16 opacity-40 transition-opacity duration-700">
+                        <div className="h-[1px] w-12 md:w-48 bg-gradient-to-r from-transparent via-white to-transparent" />
+                        <Sparkles className="w-8 h-8 md:w-16 md:h-16 text-yellow-100 animate-pulse" />
+                        <div className="h-[1px] w-12 md:w-48 bg-gradient-to-l from-transparent via-white to-transparent" />
+                      </div>
+                    )}
+                    
+                    {/* Atmosphere Companion Card */}
+                    <div className={`mt-6 md:mt-12 transition-all duration-1000 ${showFriends ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20 pointer-events-none'}`}>
+                      <div className="relative group/card">
+                         {/* Background Glow */}
+                         <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 blur-[50px] opacity-50 animate-pulse" />
+                         
+                         {/* Glass Card */}
+                         <div className="relative px-8 py-6 md:px-16 md:py-10 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] md:rounded-[3rem] shadow-[0_20px_80px_rgba(0,0,0,0.5)] hover:bg-white/10 hover:scale-105 hover:border-white/20 transition-all duration-700 cursor-pointer group">
+                            <div className="flex items-center justify-center gap-4 mb-4 md:mb-6">
+                              <Users className="w-4 h-4 md:w-5 md:h-5 text-white/40 group-hover:text-white transition-colors" />
+                              <span className="text-[10px] md:text-xs tracking-[0.5em] uppercase font-bold text-white/30 group-hover:text-white/60">Companion Circle</span>
+                              <Users className="w-4 h-4 md:w-5 md:h-5 text-white/40 group-hover:text-white transition-colors" />
+                            </div>
+                            
+                            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-12">
+                              {companions.map((name) => (
+                                <div key={name} className="flex flex-col items-center">
+                                  <span className="text-2xl md:text-4xl font-elegant italic text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.6)] transition-all">
+                                    {name}
+                                  </span>
+                                  <div className="w-0 h-[1px] bg-white/30 group-hover:w-full transition-all duration-1000 mt-1" />
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* Inner Shine */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 rounded-[2rem] md:rounded-[3rem] pointer-events-none" />
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Gift Lottie - Shifted up for mobile */}
+      {/* Gift Lottie Area */}
       {isBlown && (
-         <div className="absolute bottom-[100px] md:bottom-[75px] left-1/2 -translate-x-1/2 w-[160px] h-[160px] md:w-[240px] md:h-[240px] opacity-100 animate-in zoom-in slide-in-from-bottom-10 duration-[2500ms] pointer-events-none z-40">
-           <Lottie 
-             animationData={giftLottieData}
-             loop={true}
-             className="w-full h-full drop-shadow-[0_0_60px_rgba(255,255,255,0.4)]"
-           />
+         <div className="absolute bottom-[40px] md:bottom-[60px] left-1/2 -translate-x-1/2 flex flex-col items-center z-40">
+           <div 
+             onClick={() => setShowFriends(!showFriends)}
+             className="w-[140px] h-[140px] md:w-[200px] md:h-[200px] cursor-pointer group animate-in zoom-in slide-in-from-bottom-10 duration-[2500ms] relative"
+           >
+             <div className="absolute inset-0 bg-white/0 rounded-full group-hover:bg-white/5 transition-colors duration-500 scale-110" />
+             <Lottie 
+               animationData={giftLottieData}
+               loop={true}
+               className="w-full h-full drop-shadow-[0_0_60px_rgba(255,255,255,0.4)] transition-transform duration-500 group-hover:scale-110 group-hover:-translate-y-4"
+             />
+             {!showFriends && (
+               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md border border-white/10 px-4 py-1.5 rounded-full animate-bounce shadow-xl">
+                  <span className="text-[9px] tracking-[0.2em] uppercase font-bold text-white/80 whitespace-nowrap">Check Companions</span>
+               </div>
+             )}
+           </div>
          </div>
       )}
 
-      {/* Footer - Shifted up for mobile */}
-      <footer className={`absolute bottom-12 md:bottom-6 left-0 right-0 flex justify-center transition-all duration-2000 ${appState !== AppState.COUNTDOWN ? 'opacity-50' : 'opacity-15'} z-50`}>
+      {/* Footer */}
+      <footer className={`fixed bottom-6 left-0 right-0 flex justify-center transition-all duration-2000 ${appState !== AppState.COUNTDOWN ? 'opacity-50' : 'opacity-15'} z-50 pointer-events-none`}>
         <div className="flex items-center gap-6 px-8 py-2.5 bg-white/5 backdrop-blur-3xl border border-white/5 rounded-full shadow-2xl">
            <span className="text-[9px] md:text-[11px] tracking-[0.4em] md:tracking-[0.8em] uppercase font-black text-white/80 text-center">A New Journey in 2026</span>
         </div>
@@ -299,14 +339,14 @@ const App: React.FC = () => {
         }
 
         .group:hover .interactive-text {
-          transform: scale(1.18);
+          transform: scale(1.1);
           text-shadow: 0 0 120px rgba(255,255,255,0.9), 0 0 30px rgba(255,255,255,0.5);
           color: #fff;
         }
 
         @keyframes hero-rise {
-          0% { opacity: 0; transform: translateY(180px) scale(0.8); filter: blur(40px); }
-          100% { opacity: 1; transform: translateY(-80px) scale(1); filter: blur(0); }
+          0% { opacity: 0; transform: translateY(100px) scale(0.8); filter: blur(40px); }
+          100% { opacity: 1; transform: translateY(-20px) scale(1); filter: blur(0); }
         }
         .animate-hero-rise {
           animation: hero-rise 3.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
