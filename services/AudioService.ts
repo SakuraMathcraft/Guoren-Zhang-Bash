@@ -55,8 +55,13 @@ class AudioService {
   ];
 
   async init() {
-    if (this.audioCtx) return;
-    this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (!this.audioCtx) {
+      this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    // Critical for mobile: resume context within user gesture
+    if (this.audioCtx.state === 'suspended') {
+      await this.audioCtx.resume();
+    }
   }
 
   async startMicMonitoring(onBlow: () => void) {
@@ -65,15 +70,21 @@ class AudioService {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const source = this.audioCtx!.createMediaStreamSource(stream);
       const analyser = this.audioCtx!.createAnalyser();
-      analyser.fftSize = 256;
+      analyser.fftSize = 512;
       source.connect(analyser);
       const data = new Uint8Array(analyser.frequencyBinCount);
 
       const check = () => {
         if (!this.audioCtx) return;
         analyser.getByteFrequencyData(data);
-        const avg = data.reduce((a, b) => a + b) / data.length;
-        if (avg > 65) {
+        
+        // Blowing creates high energy in low frequencies (wind noise)
+        // We look at the first 25% of the spectrum (low end)
+        const lowEnd = data.slice(0, Math.floor(data.length * 0.25));
+        const avgLow = lowEnd.reduce((a, b) => a + b, 0) / lowEnd.length;
+        
+        // Mobile mics often have lower gain; 45 is a more reliable threshold than 65
+        if (avgLow > 45) {
           onBlow();
           stream.getTracks().forEach(t => t.stop());
         } else {
@@ -81,7 +92,11 @@ class AudioService {
         }
       };
       check();
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error("Mic access failed:", e);
+      // Fallback: if mic fails, trigger blow after a delay for user experience
+      setTimeout(onBlow, 3000);
+    }
   }
 
   playTrack(index: number) {
@@ -128,9 +143,7 @@ class AudioService {
     this.currentOscillators = [];
   }
 
-  getIsPlaying() { return this.isPlaying; }
   getCurrentTrack() { return this.currentTrackIndex; }
-  getTrackCount() { return this.tracks.length; }
 }
 
 export const audioService = new AudioService();
