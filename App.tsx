@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AppState } from './types';
 import CountdownTimer from './components/CountdownTimer';
@@ -30,12 +31,15 @@ const App: React.FC = () => {
     setMousePos({ x, y });
   };
 
-  // Big Countdown Logic
+  // Big Countdown Logic & Sound
   useEffect(() => {
     let interval: number;
     if (appState === AppState.FINAL_COUNTDOWN) {
       interval = window.setInterval(() => {
         setFinalSeconds((prev) => {
+          // Play tick sound every second
+          audioService.playCountdownTick(prev === 1);
+          
           if (prev <= 1) {
             clearInterval(interval);
             setAppState(AppState.CAKE_REVEAL);
@@ -50,6 +54,7 @@ const App: React.FC = () => {
 
   const startTestMode = () => setAppState(AppState.CAKE_REVEAL);
   const startFinalPreview = () => {
+    audioService.init(); // Initialize audio context on click
     setFinalSeconds(10);
     setAppState(AppState.FINAL_COUNTDOWN);
   };
@@ -185,14 +190,14 @@ const App: React.FC = () => {
 
         {(appState === AppState.CAKE_REVEAL || appState === AppState.BLOWN) && (
           <div className="w-full flex flex-col items-center relative h-full justify-center min-h-[450px]">
-            {/* Cake Container */}
-            <div className={`transition-all duration-[2500ms] ease-ios ${isBlown ? 'translate-y-20 scale-75 opacity-5 blur-[30px] pointer-events-none' : 'translate-y-[-18%] scale-90 md:scale-100'}`}>
+            {/* Cake Container - Desktop Scaling Applied here */}
+            <div className={`transition-all duration-[2500ms] ease-ios ${isBlown ? 'translate-y-20 scale-75 opacity-5 blur-[30px] pointer-events-none' : 'translate-y-[-18%] scale-75 md:scale-[0.67]'}`}>
               <Cake isBlown={isBlown} />
             </div>
 
-            {/* Start Sensor / Blow Instructions - Adjusted for better centering and mobile height */}
+            {/* Start Sensor / Blow Instructions */}
             {appState === AppState.CAKE_REVEAL && !isBlown && (
-              <div className="absolute bottom-4 md:bottom-[-20px] left-0 right-0 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-8 duration-1000 z-20 pointer-events-none">
+              <div className="absolute bottom-[5vh] md:bottom-[-20px] left-0 right-0 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-8 duration-1000 z-20 pointer-events-none">
                 {!micActive ? (
                    <button 
                     onClick={startMic}
@@ -201,7 +206,6 @@ const App: React.FC = () => {
                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/20 to-blue-500/0 -translate-x-full group-hover:animate-shimmer" />
                      <Mic className="w-5 h-5 md:w-6 md:h-6 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-6" />
                      <span className="relative z-10">START SENSORS</span>
-                     <div className="absolute -inset-1 bg-white/20 blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                    </button>
                 ) : (
                   <div className="flex flex-col items-center bg-black/60 backdrop-blur-3xl border border-white/10 px-10 py-6 md:px-16 md:py-10 rounded-[2.5rem] md:rounded-[3.5rem] shadow-2xl animate-pulse ring-1 ring-white/5 pointer-events-auto">
@@ -216,8 +220,8 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Modern Interactive Celebration Text */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50 overflow-visible text-center">
+            {/* Modern Interactive Celebration Text - Scaled for Desktop (50%) and shifted up for Mobile */}
+            <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50 overflow-visible text-center pb-[10vh] md:pb-0 md:scale-50`}>
               {showLetters && (
                 <div 
                   className="animate-hero-rise group pointer-events-auto cursor-default px-4"
@@ -236,7 +240,7 @@ const App: React.FC = () => {
                   <h2 className="interactive-text text-3xl sm:text-5xl md:text-8xl font-elegant italic text-white/95 leading-tight max-w-6xl drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
                     Happy Birthday, Guoren Zhang!
                   </h2>
-                  <div className="mt-12 md:mt-24 flex items-center gap-8 md:gap-16 opacity-40">
+                  <div className="mt-8 md:mt-24 flex items-center gap-8 md:gap-16 opacity-40">
                     <div className="h-[1px] w-16 md:w-48 bg-gradient-to-r from-transparent via-white to-transparent" />
                     <Sparkles className="w-12 h-12 md:w-20 md:h-20 text-yellow-100 animate-pulse" />
                     <div className="h-[1px] w-16 md:w-48 bg-gradient-to-l from-transparent via-white to-transparent" />
@@ -248,9 +252,9 @@ const App: React.FC = () => {
         )}
       </div>
 
-      {/* Gift Lottie - Positioned specifically above the footer text and centered */}
+      {/* Gift Lottie - Shifted up for mobile */}
       {isBlown && (
-         <div className="absolute bottom-[65px] md:bottom-[75px] left-1/2 -translate-x-1/2 w-[160px] h-[160px] md:w-[240px] md:h-[240px] opacity-100 animate-in zoom-in slide-in-from-bottom-10 duration-[2500ms] pointer-events-none z-40">
+         <div className="absolute bottom-[100px] md:bottom-[75px] left-1/2 -translate-x-1/2 w-[160px] h-[160px] md:w-[240px] md:h-[240px] opacity-100 animate-in zoom-in slide-in-from-bottom-10 duration-[2500ms] pointer-events-none z-40">
            <Lottie 
              animationData={giftLottieData}
              loop={true}
@@ -259,7 +263,8 @@ const App: React.FC = () => {
          </div>
       )}
 
-      <footer className={`absolute bottom-6 left-0 right-0 flex justify-center transition-all duration-2000 ${appState !== AppState.COUNTDOWN ? 'opacity-50' : 'opacity-15'} z-50`}>
+      {/* Footer - Shifted up for mobile */}
+      <footer className={`absolute bottom-12 md:bottom-6 left-0 right-0 flex justify-center transition-all duration-2000 ${appState !== AppState.COUNTDOWN ? 'opacity-50' : 'opacity-15'} z-50`}>
         <div className="flex items-center gap-6 px-8 py-2.5 bg-white/5 backdrop-blur-3xl border border-white/5 rounded-full shadow-2xl">
            <span className="text-[9px] md:text-[11px] tracking-[0.4em] md:tracking-[0.8em] uppercase font-black text-white/80 text-center">A New Journey in 2026</span>
         </div>
@@ -299,63 +304,12 @@ const App: React.FC = () => {
           color: #fff;
         }
 
-        .group:hover .interactive-text::after {
-          opacity: 1;
-        }
-
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        .animate-shimmer { animation: shimmer 2s infinite; }
-
-        @keyframes big-timer {
-          0% { transform: scale(1.4); opacity: 0; filter: blur(15px); }
-          20% { transform: scale(1); opacity: 1; filter: blur(0); }
-          80% { transform: scale(1); opacity: 1; filter: blur(0); }
-          100% { transform: scale(0.85); opacity: 0; filter: blur(8px); }
-        }
-        .animate-big-timer { animation: big-timer 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        @keyframes ios-entry {
-          from { opacity: 0; transform: scale(0.95) translateY(30px); filter: blur(15px); }
-          to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
-        }
-        .animate-ios-entry { animation: ios-entry 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
-
         @keyframes hero-rise {
           0% { opacity: 0; transform: translateY(180px) scale(0.8); filter: blur(40px); }
           100% { opacity: 1; transform: translateY(-80px) scale(1); filter: blur(0); }
         }
         .animate-hero-rise {
           animation: hero-rise 3.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes subhero-float {
-          0% { opacity: 0; transform: translateY(100px); filter: blur(30px); }
-          100% { opacity: 1; transform: translateY(0); filter: blur(0); }
-        }
-        .animate-subhero-float {
-          animation: subhero-float 3.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes fall-snow {
-          0% { transform: translateY(-100px) translateX(0); opacity: 0; }
-          10% { opacity: 0.6; }
-          100% { transform: translateY(110vh) translateX(60px); opacity: 0; }
-        }
-        .animate-fall-snow { animation: fall-snow linear infinite; }
-
-        @keyframes fall-ribbon {
-          0% { transform: translateY(-100px) rotate(0deg); opacity: 0; }
-          20% { opacity: 1; }
-          100% { transform: translateY(110vh) rotate(1440deg); opacity: 0; }
-        }
-        .animate-fall-ribbon { animation: fall-ribbon linear infinite; }
-
-        @keyframes pulse-scale {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.6); }
         }
       `}</style>
     </div>

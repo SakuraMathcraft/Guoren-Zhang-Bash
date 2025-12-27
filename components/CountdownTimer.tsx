@@ -62,7 +62,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ targetDate, onTenSecond
   );
 
   return (
-    <div className="flex flex-col items-center select-none w-full max-w-6xl mx-auto px-4 text-center">
+    <div className="flex flex-col items-center select-none w-full max-w-6xl mx-auto px-4 text-center pt-12 md:pt-24">
       <div className="relative flex flex-col items-center mb-6 md:mb-16 w-full">
         <h2 className="text-xl sm:text-3xl md:text-5xl font-semibold tracking-tight text-center">
           <span className="opacity-20 block text-[9px] md:text-sm uppercase tracking-[0.8em] md:tracking-[1em] mb-3 md:mb-4">Journey to</span>
