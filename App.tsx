@@ -6,7 +6,7 @@ import VinylRecord from './components/VinylRecord';
 import Lottie from 'lottie-react';
 import { audioService } from './services/AudioService';
 import { giftLottieData } from './data/giftLottie';
-import { Mic, FlaskConical, Sparkles, Timer, Heart, Users } from 'lucide-react';
+import { Mic, FlaskConical, Sparkles, Timer, Heart, Users, ChevronLeft } from 'lucide-react';
 
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.COUNTDOWN);
@@ -80,6 +80,24 @@ const App: React.FC = () => {
     await audioService.startMicMonitoring(handleBlowing);
   };
 
+  const handleBack = () => {
+    audioService.stop();
+    if (appState === AppState.BLOWN) {
+      setIsBlown(false);
+      setMicActive(false);
+      setShowLetters(false);
+      setShowBirthday(false);
+      setShowFriends(false);
+      setAppState(AppState.CAKE_REVEAL);
+    } else if (appState === AppState.CAKE_REVEAL) {
+      setAppState(AppState.COUNTDOWN);
+      setMicActive(false);
+    } else if (appState === AppState.FINAL_COUNTDOWN) {
+      setAppState(AppState.COUNTDOWN);
+      setFinalSeconds(10);
+    }
+  };
+
   const changeTrack = (index: number) => {
     setCurrentTrack(index);
     audioService.playTrack(index);
@@ -112,6 +130,17 @@ const App: React.FC = () => {
       className={`min-h-screen transition-all duration-[3000ms] ${isBlown ? 'bg-[#00000a]' : 'bg-[#030303]'} flex flex-col items-center relative px-6 overflow-x-hidden overflow-y-auto pb-48 md:pb-64`}
     >
       
+      {/* Back Button */}
+      {appState !== AppState.COUNTDOWN && (
+        <button 
+          onClick={handleBack}
+          className="fixed top-6 left-6 z-[100] p-3 md:p-4 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all duration-500 hover:scale-110 active:scale-90 group animate-in fade-in slide-in-from-left-4"
+          aria-label="Go back"
+        >
+          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 transition-transform group-hover:-translate-x-1" />
+        </button>
+      )}
+
       {/* Atmosphere Background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className={`absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-blue-900/10 blur-[180px] rounded-full animate-pulse transition-opacity duration-3000 ${appState !== AppState.COUNTDOWN ? 'opacity-100' : 'opacity-40'}`} />

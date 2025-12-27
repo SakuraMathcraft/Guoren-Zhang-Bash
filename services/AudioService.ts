@@ -1,4 +1,3 @@
-
 type Note = { f: number; d: number };
 
 class AudioService {
@@ -48,21 +47,24 @@ class AudioService {
     if (!this.audioCtx) return;
     const osc = this.audioCtx.createOscillator();
     const gain = this.audioCtx.createGain();
-    osc.type = 'sine';
+    
+    // Using square wave for sharper, louder tick sounds
+    osc.type = isFinal ? 'square' : 'sine';
     osc.frequency.setValueAtTime(isFinal ? 880 : 440, this.audioCtx.currentTime);
-    // Enhanced volume for ticks
-    gain.gain.setValueAtTime(0.9, this.audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.1);
+    
+    // Set gain to maximum (1.0)
+    gain.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.15);
+    
     osc.connect(gain);
     gain.connect(this.audioCtx.destination);
     osc.start();
-    osc.stop(this.audioCtx.currentTime + 0.1);
+    osc.stop(this.audioCtx.currentTime + 0.15);
   }
 
   async startMicMonitoring(onBlow: () => void) {
     await this.init();
     try {
-      // Critical: Disable software audio processing for better 'blow' detection on mobile
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: false,
@@ -79,11 +81,10 @@ class AudioService {
       const check = () => {
         if (!this.audioCtx) return;
         analyser.getByteFrequencyData(data);
-        // Focus on low-frequency 'wind' noise (blowing)
         const lowEnd = data.slice(0, Math.floor(data.length * 0.2));
         const avgLow = lowEnd.reduce((a, b) => a + b, 0) / lowEnd.length;
         
-        // Lower threshold for better mobile sensitivity
+        // Threshold remains sensitive for mobile
         if (avgLow > 35) {
           onBlow();
           stream.getTracks().forEach(t => t.stop());
@@ -93,7 +94,6 @@ class AudioService {
       };
       check();
     } catch (e) { 
-      // Fallback if mic is blocked
       setTimeout(onBlow, 5000);
     }
   }
@@ -117,7 +117,7 @@ class AudioService {
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(n.f, time);
       gain.gain.setValueAtTime(0, time);
-      // Increased max volume from 0.85 to 1.0
+      // Ensure absolute maximum volume for music tracks
       gain.gain.linearRampToValueAtTime(1.0, time + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.001, time + n.d);
       osc.connect(gain);
