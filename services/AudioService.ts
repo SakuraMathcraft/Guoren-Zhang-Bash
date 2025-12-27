@@ -50,7 +50,8 @@ class AudioService {
     const gain = this.audioCtx.createGain();
     osc.type = 'sine';
     osc.frequency.setValueAtTime(isFinal ? 880 : 440, this.audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.6, this.audioCtx.currentTime);
+    // Enhanced volume for ticks
+    gain.gain.setValueAtTime(0.9, this.audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.1);
     osc.connect(gain);
     gain.connect(this.audioCtx.destination);
@@ -61,18 +62,29 @@ class AudioService {
   async startMicMonitoring(onBlow: () => void) {
     await this.init();
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Critical: Disable software audio processing for better 'blow' detection on mobile
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        } 
+      });
       const source = this.audioCtx!.createMediaStreamSource(stream);
       const analyser = this.audioCtx!.createAnalyser();
       analyser.fftSize = 512;
       source.connect(analyser);
       const data = new Uint8Array(analyser.frequencyBinCount);
+      
       const check = () => {
         if (!this.audioCtx) return;
         analyser.getByteFrequencyData(data);
-        const lowEnd = data.slice(0, Math.floor(data.length * 0.25));
+        // Focus on low-frequency 'wind' noise (blowing)
+        const lowEnd = data.slice(0, Math.floor(data.length * 0.2));
         const avgLow = lowEnd.reduce((a, b) => a + b, 0) / lowEnd.length;
-        if (avgLow > 45) {
+        
+        // Lower threshold for better mobile sensitivity
+        if (avgLow > 35) {
           onBlow();
           stream.getTracks().forEach(t => t.stop());
         } else {
@@ -81,7 +93,8 @@ class AudioService {
       };
       check();
     } catch (e) { 
-      setTimeout(onBlow, 3000);
+      // Fallback if mic is blocked
+      setTimeout(onBlow, 5000);
     }
   }
 
@@ -104,7 +117,8 @@ class AudioService {
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(n.f, time);
       gain.gain.setValueAtTime(0, time);
-      gain.gain.linearRampToValueAtTime(0.85, time + 0.05);
+      // Increased max volume from 0.85 to 1.0
+      gain.gain.linearRampToValueAtTime(1.0, time + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.001, time + n.d);
       osc.connect(gain);
       gain.connect(this.audioCtx!.destination);
