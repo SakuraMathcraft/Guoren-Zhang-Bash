@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 Celebration</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 使用国内高速镜像替换 googleapis 解决加载缓慢或被拦截问题 -->
     <link href="https://fonts.loli.net/css2?family=Great+Vibes&family=Montserrat:wght@100;300;400;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
     <style>
       body {
@@ -24,7 +23,6 @@
       .font-elegant {
         font-family: 'Playfair Display', serif;
       }
-      /* Custom scrollbar for better aesthetics */
       ::-webkit-scrollbar {
         width: 6px;
       }
@@ -42,12 +40,12 @@
 <script type="importmap">
 {
   "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
     "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
     "lottie-react": "https://esm.sh/lottie-react@^2.4.1"
   }
 }
@@ -55,7 +53,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <!-- Entry point for the React application -->
-    <script type="module" src="./index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
