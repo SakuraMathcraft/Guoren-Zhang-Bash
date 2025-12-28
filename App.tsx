@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AppState } from './types';
 import CountdownTimer from './components/CountdownTimer';
@@ -71,8 +72,9 @@ const App: React.FC = () => {
     setIsBlown(true);
     setAppState(AppState.BLOWN);
     audioService.playTrack(0);
-    setTimeout(() => setShowLetters(true), 800);
-    setTimeout(() => setShowBirthday(true), 2800);
+    // Smooth sequence
+    setTimeout(() => setShowLetters(true), 500);
+    setTimeout(() => setShowBirthday(true), 2500);
   }, []);
 
   const startMic = async () => {
@@ -81,13 +83,15 @@ const App: React.FC = () => {
   };
 
   const handleBack = () => {
+    // Immediate state cleanup to prevent ghosts
+    setShowLetters(false);
+    setShowBirthday(false);
+    setShowFriends(false);
     audioService.stop();
+
     if (appState === AppState.BLOWN) {
       setIsBlown(false);
       setMicActive(false);
-      setShowLetters(false);
-      setShowBirthday(false);
-      setShowFriends(false);
       setAppState(AppState.CAKE_REVEAL);
     } else if (appState === AppState.CAKE_REVEAL) {
       setAppState(AppState.COUNTDOWN);
@@ -106,13 +110,13 @@ const App: React.FC = () => {
   const companions = ["Zhengyu Xu", "Zhiheng Du", "Yang Zheng"];
 
   const particles = useMemo(() => {
-    return Array.from({ length: 70 }).map((_, i) => ({
+    return Array.from({ length: 80 }).map((_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 10}s`,
-      duration: `${Math.random() * 4 + 6}s`,
-      size: Math.random() * 6 + 4,
-      type: i % 2 === 0 ? 'snow' : 'ribbon',
+      delay: `${Math.random() * 15}s`,
+      duration: `${Math.random() * 5 + 5}s`,
+      size: Math.random() * 10 + 4,
+      type: i % 3 === 0 ? 'snow' : 'ribbon',
       color: ['#FFFFFF', '#60A5FA', '#F472B6', '#FBBF24', '#34D399', '#A78BFA'][Math.floor(Math.random() * 6)]
     }));
   }, []);
@@ -143,11 +147,12 @@ const App: React.FC = () => {
 
       {/* Atmosphere Background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className={`absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-blue-900/10 blur-[180px] rounded-full animate-pulse transition-opacity duration-3000 ${appState !== AppState.COUNTDOWN ? 'opacity-100' : 'opacity-40'}`} />
-        <div className={`absolute bottom-[-10%] right-[-10%] w-[70%] h-[70%] bg-purple-900/10 blur-[180px] rounded-full animate-pulse transition-opacity duration-3000 ${appState !== AppState.COUNTDOWN ? 'opacity-100' : 'opacity-40'}`} style={{ animationDelay: '3s' }} />
+        <div className={`absolute top-[-10%] left-[-10%] w-[70%] h-[70%] bg-blue-900/15 blur-[180px] rounded-full animate-pulse transition-opacity duration-3000 ${appState !== AppState.COUNTDOWN ? 'opacity-100' : 'opacity-40'}`} />
+        <div className={`absolute bottom-[-10%] right-[-10%] w-[70%] h-[70%] bg-purple-900/15 blur-[180px] rounded-full animate-pulse transition-opacity duration-3000 ${appState !== AppState.COUNTDOWN ? 'opacity-100' : 'opacity-40'}`} style={{ animationDelay: '3s' }} />
         <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
       </div>
 
+      {/* Confetti & Snow Particles */}
       {isBlown && (
         <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden">
           {particles.map((p) => (
@@ -156,12 +161,12 @@ const App: React.FC = () => {
               className={`absolute top-[-100px] ${p.type === 'snow' ? 'rounded-full' : 'rounded-sm'} ${p.type === 'snow' ? 'animate-fall-snow' : 'animate-fall-ribbon'}`}
               style={{
                 left: p.left,
-                width: `${p.size}px`,
-                height: p.type === 'snow' ? `${p.size}px` : `${p.size * 4}px`,
+                width: p.type === 'snow' ? `${p.size}px` : `${p.size * 0.4}px`,
+                height: p.type === 'snow' ? `${p.size}px` : `${p.size * 1.5}px`,
                 backgroundColor: p.type === 'snow' ? '#FFFFFF' : p.color,
                 animationDelay: p.delay,
                 animationDuration: p.duration,
-                opacity: p.type === 'snow' ? 0.3 : 0.6,
+                opacity: p.type === 'snow' ? 0.35 : 0.7,
                 filter: p.type === 'snow' ? 'blur(1px)' : 'none',
               }}
             />
@@ -219,7 +224,8 @@ const App: React.FC = () => {
 
         {(appState === AppState.CAKE_REVEAL || appState === AppState.BLOWN) && (
           <div className="w-full flex flex-col items-center relative h-full justify-center min-h-[450px]">
-            <div className={`transition-all duration-[2500ms] ease-ios ${isBlown ? 'translate-y-20 scale-75 opacity-5 blur-[30px] pointer-events-none' : 'translate-y-[-18%] scale-75 md:scale-[0.67]'}`}>
+            {/* Cake element moves down when blown to make space for text */}
+            <div className={`transition-all duration-[2500ms] ease-ios ${isBlown ? 'translate-y-32 scale-[0.6] opacity-10 blur-[20px] pointer-events-none' : 'translate-y-[-18%] scale-75 md:scale-[0.67]'}`}>
               <Cake isBlown={isBlown} />
             </div>
 
@@ -247,63 +253,67 @@ const App: React.FC = () => {
               </div>
             )}
 
+            {/* Celebration Text Container */}
             <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50 overflow-visible text-center pb-[5vh] md:pb-0 md:scale-50`}>
-              <div className={`flex flex-col items-center transition-all duration-1000 ease-ios ${showFriends ? 'gap-2 translate-y-[-6vh] md:translate-y-[-10vh]' : 'gap-2 md:gap-20'}`}>
-                {showLetters && (
-                  <div className="animate-hero-rise group pointer-events-auto cursor-default px-4" style={tiltStyle}>
-                    <h1 className="interactive-text text-5xl sm:text-8xl md:text-[15rem] font-artistic text-white leading-none tracking-tight">
-                      Hello 2026!
-                    </h1>
-                  </div>
-                )}
+              {/* Lower initial position for mobile to prevent top overflow */}
+              <div className={`flex flex-col items-center transition-all duration-[1500ms] ease-ios ${showBirthday ? 'translate-y-[-4vh] md:translate-y-[-15vh]' : 'translate-y-[12vh] md:translate-y-0'}`}>
                 
-                {showBirthday && (
-                  <div className={`flex flex-col items-center group pointer-events-auto cursor-default px-4 transition-all duration-700 ${showFriends ? 'scale-[0.85] md:scale-100' : ''}`} style={tiltStyle}>
-                    <h2 className="interactive-text text-2xl sm:text-5xl md:text-8xl font-elegant italic text-white/95 leading-tight max-w-6xl drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                      Happy Birthday, Guoren Zhang!
-                    </h2>
+                {/* Hello 2026! */}
+                <div 
+                  className={`transition-all duration-1000 ease-ios pointer-events-auto cursor-default px-4 
+                    ${showLetters ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-2xl'}
+                  `} 
+                  style={tiltStyle}
+                >
+                  <h1 className="interactive-text text-5xl sm:text-8xl md:text-[15rem] font-artistic text-white leading-none tracking-tight">
+                    Hello 2026!
+                  </h1>
+                </div>
+                
+                {/* Birthday Text */}
+                <div 
+                  className={`mt-4 md:mt-12 flex flex-col items-center transition-all duration-[1200ms] ease-ios pointer-events-auto cursor-default px-4 
+                    ${showBirthday ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-20 blur-xl'}
+                  `} 
+                  style={tiltStyle}
+                >
+                  <h2 className="interactive-text text-2xl sm:text-5xl md:text-8xl font-elegant italic text-white/95 leading-tight max-w-6xl drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                    Happy Birthday, Guoren Zhang!
+                  </h2>
 
-                    {/* Repositioned Sparkles below birthday text */}
-                    {!showFriends && (
-                      <div className="mt-4 mb-4 md:mt-8 md:mb-8 flex items-center gap-8 md:gap-16 opacity-40 transition-opacity duration-700">
-                        <div className="h-[1px] w-12 md:w-48 bg-gradient-to-r from-transparent via-white to-transparent" />
-                        <Sparkles className="w-8 h-8 md:w-16 md:h-16 text-yellow-100 animate-pulse" />
-                        <div className="h-[1px] w-12 md:w-48 bg-gradient-to-l from-transparent via-white to-transparent" />
-                      </div>
-                    )}
-                    
-                    {/* Atmosphere Companion Card */}
-                    <div className={`mt-6 md:mt-12 transition-all duration-1000 ${showFriends ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20 pointer-events-none'}`}>
-                      <div className="relative group/card">
-                         {/* Background Glow */}
-                         <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 blur-[50px] opacity-50 animate-pulse" />
-                         
-                         {/* Glass Card */}
-                         <div className="relative px-8 py-6 md:px-16 md:py-10 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] md:rounded-[3rem] shadow-[0_20px_80px_rgba(0,0,0,0.5)] hover:bg-white/10 hover:scale-105 hover:border-white/20 transition-all duration-700 cursor-pointer group">
-                            <div className="flex items-center justify-center gap-4 mb-4 md:mb-6">
-                              <Users className="w-4 h-4 md:w-5 md:h-5 text-white/40 group-hover:text-white transition-colors" />
-                              <span className="text-[10px] md:text-xs tracking-[0.5em] uppercase font-bold text-white/30 group-hover:text-white/60">Companion Circle</span>
-                              <Users className="w-4 h-4 md:w-5 md:h-5 text-white/40 group-hover:text-white transition-colors" />
-                            </div>
-                            
-                            <div className="flex flex-col md:flex-row items-center gap-3 md:gap-12">
-                              {companions.map((name) => (
-                                <div key={name} className="flex flex-col items-center">
-                                  <span className="text-2xl md:text-4xl font-elegant italic text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.6)] transition-all">
-                                    {name}
-                                  </span>
-                                  <div className="w-0 h-[1px] bg-white/30 group-hover:w-full transition-all duration-1000 mt-1" />
-                                </div>
-                              ))}
-                            </div>
-                            
-                            {/* Inner Shine */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 rounded-[2rem] md:rounded-[3rem] pointer-events-none" />
-                         </div>
-                      </div>
+                  {!showFriends && (
+                    <div className="mt-2 mb-2 md:mt-8 md:mb-8 flex items-center gap-6 md:gap-16 opacity-40 transition-opacity duration-700">
+                      <div className="h-[1px] w-12 md:w-48 bg-gradient-to-r from-transparent via-white to-transparent" />
+                      <Sparkles className="w-6 h-6 md:w-16 md:h-16 text-yellow-100 animate-pulse" />
+                      <div className="h-[1px] w-12 md:w-48 bg-gradient-to-l from-transparent via-white to-transparent" />
+                    </div>
+                  )}
+                  
+                  {/* Companion Card */}
+                  <div className={`mt-4 md:mt-12 transition-all duration-1000 ${showFriends ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20 pointer-events-none'}`}>
+                    <div className="relative group/card">
+                       <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 blur-[50px] opacity-50 animate-pulse" />
+                       <div className="relative px-8 py-6 md:px-16 md:py-10 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] md:rounded-[3rem] shadow-[0_20px_80px_rgba(0,0,0,0.5)] hover:bg-white/10 hover:scale-105 hover:border-white/20 transition-all duration-700 cursor-pointer group">
+                          <div className="flex items-center justify-center gap-4 mb-3 md:mb-6">
+                            <Users className="w-4 h-4 md:w-5 md:h-5 text-white/40 group-hover:text-white transition-colors" />
+                            <span className="text-[10px] md:text-xs tracking-[0.4em] md:tracking-[0.5em] uppercase font-bold text-white/30 group-hover:text-white/60">Companion Circle</span>
+                            <Users className="w-4 h-4 md:w-5 md:h-5 text-white/40 group-hover:text-white transition-colors" />
+                          </div>
+                          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-12">
+                            {companions.map((name) => (
+                              <div key={name} className="flex flex-col items-center">
+                                <span className="text-xl md:text-4xl font-elegant italic text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.6)] transition-all">
+                                  {name}
+                                </span>
+                                <div className="w-0 h-[1px] bg-white/30 group-hover:w-full transition-all duration-1000 mt-1" />
+                              </div>
+                            ))}
+                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 rounded-[2rem] md:rounded-[3rem] pointer-events-none" />
+                       </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -350,10 +360,10 @@ const App: React.FC = () => {
         .ease-ios { transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1); }
         
         .interactive-text {
-          transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), text-shadow 0.5s ease-out;
+          transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), text-shadow 0.5s ease-out, opacity 1s, filter 1s;
           text-shadow: 0 0 40px rgba(255,255,255,0.1);
           position: relative;
-          will-change: transform, text-shadow;
+          will-change: transform, text-shadow, opacity, filter;
         }
 
         .interactive-text::after {
@@ -368,17 +378,33 @@ const App: React.FC = () => {
         }
 
         .group:hover .interactive-text {
-          transform: scale(1.1);
+          transform: scale(1.05);
           text-shadow: 0 0 120px rgba(255,255,255,0.9), 0 0 30px rgba(255,255,255,0.5);
           color: #fff;
         }
 
-        @keyframes hero-rise {
-          0% { opacity: 0; transform: translateY(100px) scale(0.8); filter: blur(40px); }
-          100% { opacity: 1; transform: translateY(-20px) scale(1); filter: blur(0); }
+        @keyframes fall-snow {
+          0% { transform: translateY(-10vh) translateX(0) rotate(0); opacity: 0; }
+          10% { opacity: 0.6; }
+          90% { opacity: 0.6; }
+          100% { transform: translateY(110vh) translateX(20px) rotate(360deg); opacity: 0; }
         }
-        .animate-hero-rise {
-          animation: hero-rise 3.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+        @keyframes fall-ribbon {
+          0% { transform: translateY(-10vh) translateX(0) rotate(0); opacity: 0; }
+          10% { opacity: 0.8; }
+          90% { opacity: 0.8; }
+          100% { transform: translateY(110vh) translateX(-30px) rotate(720deg); opacity: 0; }
+        }
+
+        .animate-fall-snow {
+          animation: fall-snow 10s linear infinite;
+          will-change: transform, opacity;
+        }
+
+        .animate-fall-ribbon {
+          animation: fall-ribbon 7s linear infinite;
+          will-change: transform, opacity;
         }
       `}</style>
     </div>

@@ -1,3 +1,4 @@
+
 type Note = { f: number; d: number };
 
 class AudioService {
@@ -48,11 +49,9 @@ class AudioService {
     const osc = this.audioCtx.createOscillator();
     const gain = this.audioCtx.createGain();
     
-    // Using square wave for sharper, louder tick sounds
     osc.type = isFinal ? 'square' : 'sine';
     osc.frequency.setValueAtTime(isFinal ? 880 : 440, this.audioCtx.currentTime);
     
-    // Set gain to maximum (1.0)
     gain.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.15);
     
@@ -84,8 +83,8 @@ class AudioService {
         const lowEnd = data.slice(0, Math.floor(data.length * 0.2));
         const avgLow = lowEnd.reduce((a, b) => a + b, 0) / lowEnd.length;
         
-        // Threshold remains sensitive for mobile
-        if (avgLow > 35) {
+        // Increased threshold from 35 to 65 for better blowing detection
+        if (avgLow > 65) {
           onBlow();
           stream.getTracks().forEach(t => t.stop());
         } else {
@@ -94,6 +93,7 @@ class AudioService {
       };
       check();
     } catch (e) { 
+      // Fallback for no mic access
       setTimeout(onBlow, 5000);
     }
   }
@@ -117,7 +117,6 @@ class AudioService {
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(n.f, time);
       gain.gain.setValueAtTime(0, time);
-      // Ensure absolute maximum volume for music tracks
       gain.gain.linearRampToValueAtTime(1.0, time + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.001, time + n.d);
       osc.connect(gain);
