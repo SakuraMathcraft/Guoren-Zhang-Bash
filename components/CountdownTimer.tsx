@@ -1,6 +1,34 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { TimeLeft } from '../types';
+
+interface TimeUnitProps {
+  label: string;
+  value: number;
+  accentColor: string;
+  glowColor: string;
+}
+
+// Memoized component to prevent unnecessary re-renders when the value doesn't change
+// This is crucial for stability of the hover effects and transitions
+const TimeUnit = memo(({ label, value, accentColor, glowColor }: TimeUnitProps) => (
+  <div className="group relative flex flex-col items-center justify-center p-3 md:p-8 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-default hover:scale-110">
+    <div className={`absolute inset-0 rounded-[1.5rem] md:rounded-[3rem] bg-white/[0.03] opacity-0 group-hover:opacity-100 backdrop-blur-xl border border-white/10 transition-all duration-700 scale-90 group-hover:scale-100 -z-10`} />
+    <div className={`absolute inset-0 ${glowColor} opacity-0 group-hover:opacity-10 blur-[80px] rounded-full transition-all duration-1000`} />
+    
+    <div className={`text-4xl sm:text-7xl md:text-9xl font-semibold tracking-tighter tabular-nums text-white/40 transition-all duration-500 group-hover:text-white group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.5)] ${accentColor}`}>
+      {value.toString().padStart(2, '0')}
+    </div>
+    
+    <div className="text-[8px] md:text-xs uppercase tracking-[0.3em] md:tracking-[0.4em] text-white/20 mt-3 md:mt-6 font-black transition-all duration-500 group-hover:text-white group-hover:tracking-[0.5em]">
+      {label}
+    </div>
+    
+    <div className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full mt-4 md:mt-6 opacity-0 transition-all duration-700 group-hover:opacity-100 ${accentColor.replace('group-hover:', '')} shadow-[0_0_15px_currentColor]`} />
+  </div>
+));
+
+TimeUnit.displayName = 'TimeUnit';
 
 interface CountdownTimerProps {
   targetDate: Date;
@@ -43,23 +71,6 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ targetDate, onTenSecond
     }, 1000);
     return () => clearInterval(timer);
   }, [targetDate, onFinished, onTenSecondsLeft]);
-
-  const TimeUnit = ({ label, value, accentColor, glowColor }: { label: string; value: number; accentColor: string; glowColor: string }) => (
-    <div className="group relative flex flex-col items-center justify-center p-3 md:p-8 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-default hover:scale-110">
-      <div className={`absolute inset-0 rounded-[1.5rem] md:rounded-[3rem] bg-white/[0.03] opacity-0 group-hover:opacity-100 backdrop-blur-xl border border-white/10 transition-all duration-700 scale-90 group-hover:scale-100 -z-10`} />
-      <div className={`absolute inset-0 ${glowColor} opacity-0 group-hover:opacity-10 blur-[80px] rounded-full transition-all duration-1000`} />
-      
-      <div className={`text-4xl sm:text-7xl md:text-9xl font-semibold tracking-tighter tabular-nums text-white/40 transition-all duration-500 group-hover:text-white group-hover:drop-shadow-[0_0_30px_rgba(255,255,255,0.5)] ${accentColor}`}>
-        {value.toString().padStart(2, '0')}
-      </div>
-      
-      <div className="text-[8px] md:text-xs uppercase tracking-[0.3em] md:tracking-[0.4em] text-white/20 mt-3 md:mt-6 font-black transition-all duration-500 group-hover:text-white group-hover:tracking-[0.5em]">
-        {label}
-      </div>
-      
-      <div className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full mt-4 md:mt-6 opacity-0 transition-all duration-700 group-hover:opacity-100 ${accentColor.replace('group-hover:', '')} shadow-[0_0_15px_currentColor]`} />
-    </div>
-  );
 
   return (
     <div className="flex flex-col items-center select-none w-full max-w-6xl mx-auto px-4 text-center pt-12 md:pt-24">

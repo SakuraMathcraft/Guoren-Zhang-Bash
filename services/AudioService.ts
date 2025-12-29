@@ -83,8 +83,8 @@ class AudioService {
         const lowEnd = data.slice(0, Math.floor(data.length * 0.2));
         const avgLow = lowEnd.reduce((a, b) => a + b, 0) / lowEnd.length;
         
-        // Increased threshold from 35 to 65 for better blowing detection
-        if (avgLow > 65) {
+        // Final sensitivity adjustment: from 65 to 85
+        if (avgLow > 85) {
           onBlow();
           stream.getTracks().forEach(t => t.stop());
         } else {

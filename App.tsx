@@ -230,7 +230,7 @@ const App: React.FC = () => {
             </div>
 
             {appState === AppState.CAKE_REVEAL && !isBlown && (
-              <div className="absolute bottom-[5vh] md:bottom-[-20px] left-0 right-0 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-8 duration-1000 z-20 pointer-events-none">
+              <div className="absolute bottom-[8vh] md:bottom-[-20px] left-0 right-0 flex flex-col items-center justify-center animate-in fade-in slide-in-from-bottom-8 duration-1000 z-[70] pointer-events-none">
                 {!micActive ? (
                    <button 
                     onClick={startMic}
@@ -255,29 +255,28 @@ const App: React.FC = () => {
 
             {/* Celebration Text Container */}
             <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50 overflow-visible text-center pb-[5vh] md:pb-0 md:scale-50`}>
-              {/* Lower initial position for mobile to prevent top overflow */}
               <div className={`flex flex-col items-center transition-all duration-[1500ms] ease-ios ${showBirthday ? 'translate-y-[-4vh] md:translate-y-[-15vh]' : 'translate-y-[12vh] md:translate-y-0'}`}>
                 
                 {/* Hello 2026! */}
                 <div 
-                  className={`transition-all duration-1000 ease-ios pointer-events-auto cursor-default px-4 
+                  className={`group transition-all duration-1000 ease-ios pointer-events-auto cursor-default px-4 
                     ${showLetters ? 'opacity-100 scale-100 blur-0' : 'opacity-0 scale-90 blur-2xl'}
                   `} 
                   style={tiltStyle}
                 >
-                  <h1 className="interactive-text text-5xl sm:text-8xl md:text-[15rem] font-artistic text-white leading-none tracking-tight">
+                  <h1 className="interactive-text text-5xl sm:text-8xl md:text-[15rem] font-artistic text-white leading-none tracking-tight transition-all duration-500 group-hover:scale-110 group-hover:drop-shadow-[0_0_40px_rgba(255,255,255,0.8)]">
                     Hello 2026!
                   </h1>
                 </div>
                 
                 {/* Birthday Text */}
                 <div 
-                  className={`mt-4 md:mt-12 flex flex-col items-center transition-all duration-[1200ms] ease-ios pointer-events-auto cursor-default px-4 
+                  className={`group mt-4 md:mt-12 flex flex-col items-center transition-all duration-[1200ms] ease-ios pointer-events-auto cursor-default px-4 
                     ${showBirthday ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-20 blur-xl'}
                   `} 
                   style={tiltStyle}
                 >
-                  <h2 className="interactive-text text-2xl sm:text-5xl md:text-8xl font-elegant italic text-white/95 leading-tight max-w-6xl drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                  <h2 className="interactive-text text-2xl sm:text-5xl md:text-8xl font-elegant italic text-white/95 leading-tight max-w-6xl transition-all duration-500 group-hover:scale-105 group-hover:drop-shadow-[0_0_35px_rgba(255,255,255,0.7)]">
                     Happy Birthday, Guoren Zhang!
                   </h2>
 
@@ -369,18 +368,16 @@ const App: React.FC = () => {
         .interactive-text::after {
           content: '';
           position: absolute;
-          inset: -100px;
-          background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.25) 0%, transparent 60%);
+          inset: -150px;
+          background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.15) 0%, transparent 70%);
           opacity: 0;
           transition: opacity 0.8s;
           pointer-events: none;
           z-index: -1;
         }
 
-        .group:hover .interactive-text {
-          transform: scale(1.05);
-          text-shadow: 0 0 120px rgba(255,255,255,0.9), 0 0 30px rgba(255,255,255,0.5);
-          color: #fff;
+        .group:hover .interactive-text::after {
+          opacity: 1;
         }
 
         @keyframes fall-snow {
@@ -405,6 +402,11 @@ const App: React.FC = () => {
         .animate-fall-ribbon {
           animation: fall-ribbon 7s linear infinite;
           will-change: transform, opacity;
+        }
+
+        @keyframes pulse-scale {
+          0%, 100% { transform: scale(1); opacity: 0.4; }
+          50% { transform: scale(1.5); opacity: 1; }
         }
       `}</style>
     </div>
